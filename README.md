@@ -6,6 +6,13 @@ It is a public rebuild of a sales performance dashboard I built and maintain as 
 
 ![Sales revenue TY vs LY](docs/img/01_revenue_ty_ly.png)
 
+## Report pages
+| Performance Overview | MTD & YTD |
+|---|---|
+| ![](docs/img/page1_overview.png) | ![](docs/img/page2_mtd_ytd.png) |
+| **Period vs Period** | **Booking Curve & BLF** |
+| ![](docs/img/page3_period.png) | ![](docs/img/page4_blf.png) |
+
 ## Business questions it answers
 
 | Page | Question | Key measures |
