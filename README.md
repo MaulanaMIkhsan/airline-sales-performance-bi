@@ -108,7 +108,15 @@ python generator/make_previews.py     # README charts
 
 Or `make all`. Options: `--asof 2026-09-29` (data cut-off), `--scale 2.5` (volume), `--seed 42`.
 
-### Load into Power BI Desktop
+### Open the Power BI report (recommended)
+
+1. Open `powerbi/AirlineSalesPerformance.pbip` in Power BI Desktop (Power BI Project format: model as TMDL, report pages as PBIR JSON, both diff-able in git).
+2. In **Transform data > Edit parameters**, point `DataFolder` to your local `data\model` folder, then **Refresh**.
+3. Four pages: Performance Overview, MTD & YTD, Period vs Period (route pull-out), Booking Curve & BLF.
+
+`generator/build_pbip.py` regenerates the whole project (model + pages) from code.
+
+### Load the model only (TMDL script)
 
 1. Clone the repo to `C:\airline-sales-performance-bi` (or anywhere and change the `DataFolder` parameter).
 2. Open a blank report. Turn on **Options > Preview features > TMDL view** if needed.

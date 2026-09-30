@@ -1,0 +1,156 @@
+table SalesFlown
+
+	column 'DATA TYPE'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: DATA TYPE
+
+	column 'SERVICE TYPE'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: SERVICE TYPE
+
+	column SUBSERVICE
+		dataType: string
+		summarizeBy: none
+		sourceColumn: SUBSERVICE
+
+	column 'AGEN NO'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: AGEN NO
+
+	column 'AGENT GROUPING'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: AGENT GROUPING
+
+	column POI
+		dataType: string
+		summarizeBy: none
+		sourceColumn: POI
+
+	column 'BRANCH OFFICE'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: BRANCH OFFICE
+
+	column ROUTEVV
+		dataType: string
+		summarizeBy: none
+		sourceColumn: ROUTEVV
+
+	column ROUTE
+		dataType: string
+		summarizeBy: none
+		sourceColumn: ROUTE
+
+	column DATES
+		dataType: dateTime
+		formatString: dd mmm yyyy
+		summarizeBy: none
+		sourceColumn: DATES
+
+	column 'CORP CODE'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: CORP CODE
+
+	column 'GROUPING CHANNEL'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: GROUPING CHANNEL
+
+	column SUBCLASS
+		dataType: string
+		summarizeBy: none
+		sourceColumn: SUBCLASS
+
+	column 'BO POO'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: BO POO
+
+	column 'CORP NAME'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: CORP NAME
+
+	column 'CORPORATE CLUSTER'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: CORPORATE CLUSTER
+
+	column 'AGENT NAME'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: AGENT NAME
+
+	column 'CORP SHARE'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: CORP SHARE
+
+	column AREA
+		dataType: string
+		summarizeBy: none
+		sourceColumn: AREA
+
+	column 'DATE TRAVEL'
+		dataType: dateTime
+		formatString: dd mmm yyyy
+		summarizeBy: none
+		sourceColumn: DATE TRAVEL
+
+	column PAX
+		dataType: int64
+		formatString: #,0
+		summarizeBy: sum
+		sourceColumn: PAX
+
+	column 'NETT USD'
+		dataType: double
+		formatString: #,0
+		summarizeBy: sum
+		sourceColumn: NETT USD
+
+	column 'BASIC FARE USD'
+		dataType: double
+		formatString: #,0
+		summarizeBy: sum
+		sourceColumn: BASIC FARE USD
+
+	column 'WEEK NUM'
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: WEEK NUM
+
+	column 'Route Status' =
+			RELATED ( DimRoute[status] )
+		summarizeBy: none
+
+	column 'POO Classification' =
+			IF ( SalesFlown[BRANCH OFFICE] = SalesFlown[BO POO], "POO", "Non POO" )
+		summarizeBy: none
+
+	column 'Corporate Cluster Group' =
+			SWITCH (
+			    TRUE (),
+			    ISBLANK ( SalesFlown[CORPORATE CLUSTER] ), "(Blank)",
+			    SalesFlown[CORPORATE CLUSTER] IN { "GOVERNMENT", "SOE" }, "GOVERNMENT & SOE",
+			    SalesFlown[CORPORATE CLUSTER] IN { "CHA/TMC", "PRIVATE" }, "PRIVATE",
+			    SalesFlown[CORPORATE CLUSTER]
+			)
+		summarizeBy: none
+
+	partition SalesFlown = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "\fact_sales_flown.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Nulls = Table.ReplaceValue(Promoted, "", null, Replacer.ReplaceValue, Table.ColumnNames(Promoted)),
+				    Typed = Table.TransformColumnTypes(Nulls, {{"DATA TYPE", type text}, {"SERVICE TYPE", type text}, {"SUBSERVICE", type text}, {"AGEN NO", type text}, {"AGENT GROUPING", type text}, {"POI", type text}, {"BRANCH OFFICE", type text}, {"ROUTEVV", type text}, {"ROUTE", type text}, {"DATES", type date}, {"CORP CODE", type text}, {"GROUPING CHANNEL", type text}, {"SUBCLASS", type text}, {"BO POO", type text}, {"CORP NAME", type text}, {"CORPORATE CLUSTER", type text}, {"AGENT NAME", type text}, {"CORP SHARE", type text}, {"AREA", type text}, {"DATE TRAVEL", type date}, {"PAX", Int64.Type}, {"NETT USD", type number}, {"BASIC FARE USD", type number}, {"WEEK NUM", Int64.Type}}, "en-US")
+				in
+				    Typed

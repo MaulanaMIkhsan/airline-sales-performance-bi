@@ -1,0 +1,45 @@
+table DateFlown
+	dataCategory: Time
+
+	column Date
+		isKey
+		formatString: dd mmm yyyy
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Date]
+
+	column Year
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Year]
+
+	column Month
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Month]
+		sortByColumn: MonthNumber
+
+	column MonthNumber
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [MonthNumber]
+
+	column Quarter
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Quarter]
+
+	column WeekNum =
+			WEEKNUM ( DateFlown[Date], 2 )
+		summarizeBy: none
+
+	partition DateFlown = calculated
+		mode: import
+		source =
+				ADDCOLUMNS (
+				    CALENDAR ( DATE ( 2024, 1, 1 ), DATE ( 2027, 12, 31 ) ),
+				    "Year", YEAR ( [Date] ),
+				    "Month", FORMAT ( [Date], "MMM" ),
+				    "MonthNumber", MONTH ( [Date] ),
+				    "Quarter", "Q" & FORMAT ( [Date], "Q" )
+				)

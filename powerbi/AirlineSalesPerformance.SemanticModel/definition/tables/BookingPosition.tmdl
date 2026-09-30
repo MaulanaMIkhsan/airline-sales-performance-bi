@@ -1,0 +1,108 @@
+table BookingPosition
+
+	column RegionCode
+		dataType: string
+		summarizeBy: none
+		sourceColumn: RegionCode
+
+	column FltNbr
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: FltNbr
+
+	column DOW
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: DOW
+
+	column Bulan
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: Bulan
+
+	column FlightType
+		dataType: string
+		summarizeBy: none
+		sourceColumn: FlightType
+
+	column SubServiceCode
+		dataType: string
+		summarizeBy: none
+		sourceColumn: SubServiceCode
+
+	column Tahun
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: Tahun
+
+	column TipeAircraft
+		dataType: string
+		summarizeBy: none
+		sourceColumn: TipeAircraft
+
+	column STD
+		dataType: dateTime
+		summarizeBy: none
+		sourceColumn: STD
+
+	column ServiceTypeCode
+		dataType: string
+		summarizeBy: none
+		sourceColumn: ServiceTypeCode
+
+	column RouteVV
+		dataType: string
+		summarizeBy: none
+		sourceColumn: RouteVV
+
+	column Route
+		dataType: string
+		summarizeBy: none
+		sourceColumn: Route
+
+	column Depart
+		dataType: string
+		summarizeBy: none
+		sourceColumn: Depart
+
+	column Arrived
+		dataType: string
+		summarizeBy: none
+		sourceColumn: Arrived
+
+	column DiffDate
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: DiffDate
+
+	column Book_Total
+		dataType: int64
+		formatString: #,0
+		summarizeBy: sum
+		sourceColumn: Book_Total
+
+	column Capacity_Total
+		dataType: int64
+		formatString: #,0
+		summarizeBy: sum
+		sourceColumn: Capacity_Total
+
+	column 'Departure Month' =
+			FORMAT ( BookingPosition[STD], "yyyy-mm" )
+		summarizeBy: none
+
+	partition BookingPosition = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "\fact_booking_position.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Nulls = Table.ReplaceValue(Promoted, "", null, Replacer.ReplaceValue, Table.ColumnNames(Promoted)),
+				    Typed = Table.TransformColumnTypes(Nulls, {{"RegionCode", type text}, {"FltNbr", Int64.Type}, {"DOW", Int64.Type}, {"Bulan", Int64.Type}, {"FlightType", type text}, {"SubServiceCode", type text}, {"Tahun", Int64.Type}, {"TipeAircraft", type text}, {"STD", type datetime}, {"ServiceTypeCode", type text}, {"RouteVV", type text}, {"Route", type text}, {"Depart", type text}, {"Arrived", type text}, {"DiffDate", Int64.Type}, {"Book_Total", Int64.Type}, {"Capacity_Total", Int64.Type}}, "en-US")
+				in
+				    Typed

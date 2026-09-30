@@ -1,0 +1,17 @@
+table PeriodSelector
+
+	column Period
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Period]
+		sortByColumn: PeriodSort
+
+	column PeriodSort
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [PeriodSort]
+
+	partition PeriodSelector = calculated
+		mode: import
+		source =
+				DATATABLE ( "Period", STRING, "PeriodSort", INTEGER, { { "MTD", 1 }, { "YTD", 2 } } )

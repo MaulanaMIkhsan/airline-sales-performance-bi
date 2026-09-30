@@ -229,6 +229,10 @@ DEFINE
 		    CALCULATE ( [Revenue TY], SalesFlown[SERVICE TYPE] = "INT" ),
 		    CALCULATE ( [Revenue TY], REMOVEFILTERS ( SalesFlown[SERVICE TYPE] ) )
 		)
+	MEASURE _Measures[Corporate Revenue TY] =
+		CALCULATE ( [Revenue TY], SalesFlown[CORP SHARE] = "Corp" )
+	MEASURE _Measures[Corporate Revenue LY] =
+		CALCULATE ( [Revenue LY], SalesFlown[CORP SHARE] = "Corp" )
 	MEASURE _Measures[Corporate Share %] =
 		DIVIDE (
 		    CALCULATE ( [Revenue TY], SalesFlown[CORP SHARE] = "Corp" ),

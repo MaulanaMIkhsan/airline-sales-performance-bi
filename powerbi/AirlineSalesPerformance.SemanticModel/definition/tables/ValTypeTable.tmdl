@@ -1,0 +1,11 @@
+table ValTypeTable
+
+	column SalesType
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [SalesType]
+
+	partition ValTypeTable = calculated
+		mode: import
+		source =
+				DATATABLE ( "SalesType", STRING, { { "Sales" }, { "Flown" } } )

@@ -6,5 +6,6 @@ SELECT RegionCode, FltNbr, DOW, Bulan, FlightType, SubServiceCode, Tahun, TipeAi
        SUM(Book_Total)     AS Book_Total,
        SUM(Capacity_Total) AS Capacity_Total
 FROM booking_position
-WHERE CAST(STD AS DATE) BETWEEN DATE '{asof}' + 1 AND DATE '{asof}' + INTERVAL 12 MONTH
+WHERE CAST(STD AS DATE) >= date_trunc('month', DATE '{asof}') + INTERVAL 1 MONTH      -- full months only
+  AND CAST(STD AS DATE) <  date_trunc('month', DATE '{asof}') + INTERVAL 13 MONTH
 GROUP BY ALL;

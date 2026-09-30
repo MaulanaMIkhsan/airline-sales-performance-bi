@@ -1,0 +1,35 @@
+relationship SalesFlown_DATES_to_DateTable
+	fromColumn: SalesFlown.DATES
+	toColumn: DateTable.Date
+
+relationship SalesFlown_DATE_TRAVEL_to_DateFlown
+	fromColumn: SalesFlown.'DATE TRAVEL'
+	toColumn: DateFlown.Date
+
+relationship SalesFlown_DATA_TYPE_to_ValTypeTable
+	fromColumn: SalesFlown.'DATA TYPE'
+	toColumn: ValTypeTable.SalesType
+
+relationship SalesFlown_SUBCLASS_to_SubclassSortOrder
+	fromColumn: SalesFlown.SUBCLASS
+	toColumn: SubclassSortOrder.BookingClass
+
+relationship SalesFlown_CORP_CODE_to_DimCorporate
+	fromColumn: SalesFlown.'CORP CODE'
+	toColumn: DimCorporate.'CORP CODE'
+
+relationship SalesFlown_BRANCH_OFFICE_to_DimBranchRegion
+	fromColumn: SalesFlown.'BRANCH OFFICE'
+	toColumn: DimBranchRegion.BO
+
+relationship SalesFlown_ROUTEVV_to_DimRoute
+	fromColumn: SalesFlown.ROUTEVV
+	toColumn: DimRoute.route_vv
+
+relationship BookingPosition_RouteVV_to_DimRoute
+	fromColumn: BookingPosition.RouteVV
+	toColumn: DimRoute.route_vv
+
+relationship SalesToFlown_route_vv_to_DimRoute
+	fromColumn: SalesToFlown.route_vv
+	toColumn: DimRoute.route_vv

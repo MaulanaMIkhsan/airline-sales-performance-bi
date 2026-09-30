@@ -1,0 +1,71 @@
+table DateTable
+	dataCategory: Time
+
+	column Date
+		isKey
+		formatString: dd mmm yyyy
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Date]
+
+	column Year
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Year]
+
+	column Month
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Month]
+		sortByColumn: MonthNumber
+
+	column MonthNumber
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [MonthNumber]
+
+	column Quarter
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Quarter]
+
+	column 'Day of week name' =
+			FORMAT ( DateTable[Date], "ddd" )
+		summarizeBy: none
+		sortByColumn: 'Day of Week Number'
+
+	column 'Day of Week Number' =
+			WEEKDAY ( DateTable[Date], 2 )
+		summarizeBy: none
+
+	column WeekNum =
+			WEEKNUM ( DateTable[Date], 2 )
+		summarizeBy: none
+
+	column YearWeek =
+			DateTable[Year] * 100 + DateTable[WeekNum]
+		summarizeBy: none
+
+	column 'Month-Day' =
+			FORMAT ( DateTable[Date], "MM-DD" )
+		summarizeBy: none
+		sortByColumn: 'MMDD Numeric'
+
+	column 'MMDD Numeric' =
+			MONTH ( DateTable[Date] ) * 100 + DAY ( DateTable[Date] )
+		summarizeBy: none
+
+	column 'Date No' =
+			DAY ( DateTable[Date] )
+		summarizeBy: none
+
+	partition DateTable = calculated
+		mode: import
+		source =
+				ADDCOLUMNS (
+				    CALENDAR ( DATE ( 2025, 1, 1 ), DATE ( 2026, 12, 31 ) ),
+				    "Year", YEAR ( [Date] ),
+				    "Month", FORMAT ( [Date], "MMM" ),
+				    "MonthNumber", MONTH ( [Date] ),
+				    "Quarter", "Q" & FORMAT ( [Date], "Q" )
+				)

@@ -1,0 +1,11 @@
+table Calendar_Slicer1
+
+	column Date
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Date]
+
+	partition Calendar_Slicer1 = calculated
+		mode: import
+		source =
+				DISTINCT ( SELECTCOLUMNS ( DateTable, "Date", DateTable[Date] ) )

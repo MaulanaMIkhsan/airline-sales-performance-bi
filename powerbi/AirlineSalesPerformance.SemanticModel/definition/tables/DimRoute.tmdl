@@ -1,0 +1,47 @@
+table DimRoute
+
+	column route_vv
+		dataType: string
+		summarizeBy: none
+		sourceColumn: route_vv
+
+	column itinerary
+		dataType: string
+		summarizeBy: none
+		sourceColumn: itinerary
+
+	column dest
+		dataType: string
+		summarizeBy: none
+		sourceColumn: dest
+
+	column service_type
+		dataType: string
+		summarizeBy: none
+		sourceColumn: service_type
+
+	column subservice
+		dataType: string
+		summarizeBy: none
+		sourceColumn: subservice
+
+	column aircraft
+		dataType: string
+		summarizeBy: none
+		sourceColumn: aircraft
+
+	column status
+		dataType: string
+		summarizeBy: none
+		sourceColumn: status
+
+	partition DimRoute = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "\dim_route.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Nulls = Table.ReplaceValue(Promoted, "", null, Replacer.ReplaceValue, Table.ColumnNames(Promoted)),
+				    Typed = Table.TransformColumnTypes(Nulls, {{"route_vv", type text}, {"itinerary", type text}, {"dest", type text}, {"service_type", type text}, {"subservice", type text}, {"aircraft", type text}, {"status", type text}}, "en-US")
+				in
+				    Typed

@@ -164,7 +164,8 @@ def booking_position(rng, routes, asof):
     days = pd.date_range(asof + pd.Timedelta(days=1), asof + pd.Timedelta(days=365))
     rows = []
     fn = 400
-    for rt in routes.itertuples():
+    route_lf = rng.normal(1, .15, len(routes))                  # some routes fill much better than others
+    for i, rt in enumerate(routes.itertuples()):
         if rt.status == "Pull Out":
             continue
         freq = max(1, round(rt.weight / 3))
@@ -174,7 +175,7 @@ def booking_position(rng, routes, asof):
                 std = days + pd.Timedelta(hours=6 + 3 * f + 2 * leg)
                 cap = np.full(len(days), CAPACITY[rt.aircraft])
                 out = (days - asof).days.values
-                lf = (.86 - .62 * (1 - np.exp(-out / 45))) * travel_season(days) ** .6 * rng.normal(1, .07, len(days))
+                lf = (.86 - .62 * (1 - np.exp(-out / 45))) * travel_season(days) ** .6 * route_lf[i] * rng.normal(1, .07, len(days))
                 book = np.clip(np.round(cap * lf), 0, cap).astype(int)
                 rows.append(pd.DataFrame({"RegionCode": rt.subservice, "FltNbr": fn + leg, "STD": std, "DOW": std.dayofweek + 1,
                     "Bulan": std.month, "Tahun": std.year, "FlightType": "J", "SubServiceCode": rt.subservice,

@@ -154,7 +154,8 @@ createOrReplace
 					let
 					    Source = Csv.Document(File.Contents(DataFolder & "\fact_sales_flown.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
 					    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-					    Typed = Table.TransformColumnTypes(Promoted, {{"DATA TYPE", type text}, {"SERVICE TYPE", type text}, {"SUBSERVICE", type text}, {"AGEN NO", type text}, {"AGENT GROUPING", type text}, {"POI", type text}, {"BRANCH OFFICE", type text}, {"ROUTEVV", type text}, {"ROUTE", type text}, {"DATES", type date}, {"CORP CODE", type text}, {"GROUPING CHANNEL", type text}, {"SUBCLASS", type text}, {"BO POO", type text}, {"CORP NAME", type text}, {"CORPORATE CLUSTER", type text}, {"AGENT NAME", type text}, {"CORP SHARE", type text}, {"AREA", type text}, {"DATE TRAVEL", type date}, {"PAX", Int64.Type}, {"NETT USD", type number}, {"BASIC FARE USD", type number}, {"WEEK NUM", Int64.Type}}, "en-US")
+					    Nulls = Table.ReplaceValue(Promoted, "", null, Replacer.ReplaceValue, Table.ColumnNames(Promoted)),
+					    Typed = Table.TransformColumnTypes(Nulls, {{"DATA TYPE", type text}, {"SERVICE TYPE", type text}, {"SUBSERVICE", type text}, {"AGEN NO", type text}, {"AGENT GROUPING", type text}, {"POI", type text}, {"BRANCH OFFICE", type text}, {"ROUTEVV", type text}, {"ROUTE", type text}, {"DATES", type date}, {"CORP CODE", type text}, {"GROUPING CHANNEL", type text}, {"SUBCLASS", type text}, {"BO POO", type text}, {"CORP NAME", type text}, {"CORPORATE CLUSTER", type text}, {"AGENT NAME", type text}, {"CORP SHARE", type text}, {"AREA", type text}, {"DATE TRAVEL", type date}, {"PAX", Int64.Type}, {"NETT USD", type number}, {"BASIC FARE USD", type number}, {"WEEK NUM", Int64.Type}}, "en-US")
 					in
 					    Typed
 
@@ -186,7 +187,8 @@ createOrReplace
 					let
 					    Source = Csv.Document(File.Contents(DataFolder & "\dim_corporate.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
 					    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-					    Typed = Table.TransformColumnTypes(Promoted, {{"CORP CODE", type text}, {"CORPORATE_NAME", type text}, {"CORPORATE_CLUSTER", type text}, {"INDUSTRY_TYPE", type text}}, "en-US")
+					    Nulls = Table.ReplaceValue(Promoted, "", null, Replacer.ReplaceValue, Table.ColumnNames(Promoted)),
+					    Typed = Table.TransformColumnTypes(Nulls, {{"CORP CODE", type text}, {"CORPORATE_NAME", type text}, {"CORPORATE_CLUSTER", type text}, {"INDUSTRY_TYPE", type text}}, "en-US")
 					in
 					    Typed
 
@@ -208,7 +210,8 @@ createOrReplace
 					let
 					    Source = Csv.Document(File.Contents(DataFolder & "\dim_branch_region.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
 					    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-					    Typed = Table.TransformColumnTypes(Promoted, {{"BO", type text}, {"REGION", type text}}, "en-US")
+					    Nulls = Table.ReplaceValue(Promoted, "", null, Replacer.ReplaceValue, Table.ColumnNames(Promoted)),
+					    Typed = Table.TransformColumnTypes(Nulls, {{"BO", type text}, {"REGION", type text}}, "en-US")
 					in
 					    Typed
 
@@ -255,7 +258,8 @@ createOrReplace
 					let
 					    Source = Csv.Document(File.Contents(DataFolder & "\dim_route.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
 					    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-					    Typed = Table.TransformColumnTypes(Promoted, {{"route_vv", type text}, {"itinerary", type text}, {"dest", type text}, {"service_type", type text}, {"subservice", type text}, {"aircraft", type text}, {"status", type text}}, "en-US")
+					    Nulls = Table.ReplaceValue(Promoted, "", null, Replacer.ReplaceValue, Table.ColumnNames(Promoted)),
+					    Typed = Table.TransformColumnTypes(Nulls, {{"route_vv", type text}, {"itinerary", type text}, {"dest", type text}, {"service_type", type text}, {"subservice", type text}, {"aircraft", type text}, {"status", type text}}, "en-US")
 					in
 					    Typed
 
@@ -353,13 +357,18 @@ createOrReplace
 			summarizeBy: sum
 			sourceColumn: Capacity_Total
 
+		column 'Departure Month' =
+				FORMAT ( BookingPosition[STD], "yyyy-mm" )
+			summarizeBy: none
+
 		partition BookingPosition = m
 			mode: import
 			source =
 					let
 					    Source = Csv.Document(File.Contents(DataFolder & "\fact_booking_position.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
 					    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-					    Typed = Table.TransformColumnTypes(Promoted, {{"RegionCode", type text}, {"FltNbr", Int64.Type}, {"DOW", Int64.Type}, {"Bulan", Int64.Type}, {"FlightType", type text}, {"SubServiceCode", type text}, {"Tahun", Int64.Type}, {"TipeAircraft", type text}, {"STD", type datetime}, {"ServiceTypeCode", type text}, {"RouteVV", type text}, {"Route", type text}, {"Depart", type text}, {"Arrived", type text}, {"DiffDate", Int64.Type}, {"Book_Total", Int64.Type}, {"Capacity_Total", Int64.Type}}, "en-US")
+					    Nulls = Table.ReplaceValue(Promoted, "", null, Replacer.ReplaceValue, Table.ColumnNames(Promoted)),
+					    Typed = Table.TransformColumnTypes(Nulls, {{"RegionCode", type text}, {"FltNbr", Int64.Type}, {"DOW", Int64.Type}, {"Bulan", Int64.Type}, {"FlightType", type text}, {"SubServiceCode", type text}, {"Tahun", Int64.Type}, {"TipeAircraft", type text}, {"STD", type datetime}, {"ServiceTypeCode", type text}, {"RouteVV", type text}, {"Route", type text}, {"Depart", type text}, {"Arrived", type text}, {"DiffDate", Int64.Type}, {"Book_Total", Int64.Type}, {"Capacity_Total", Int64.Type}}, "en-US")
 					in
 					    Typed
 
@@ -454,7 +463,8 @@ createOrReplace
 					let
 					    Source = Csv.Document(File.Contents(DataFolder & "\fact_sales_to_flown.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
 					    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-					    Typed = Table.TransformColumnTypes(Promoted, {{"route_vv", type text}, {"servicetypecode", type text}, {"sales_to_flown", Int64.Type}, {"trip_duration", Int64.Type}, {"trip_type", type text}, {"year", Int64.Type}, {"pax", Int64.Type}}, "en-US")
+					    Nulls = Table.ReplaceValue(Promoted, "", null, Replacer.ReplaceValue, Table.ColumnNames(Promoted)),
+					    Typed = Table.TransformColumnTypes(Nulls, {{"route_vv", type text}, {"servicetypecode", type text}, {"sales_to_flown", Int64.Type}, {"trip_duration", Int64.Type}, {"trip_type", type text}, {"year", Int64.Type}, {"pax", Int64.Type}}, "en-US")
 					in
 					    Typed
 
@@ -633,7 +643,8 @@ createOrReplace
 					let
 					    Source = Csv.Document(File.Contents(DataFolder & "\group_bookings.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
 					    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-					    Typed = Table.TransformColumnTypes(Promoted, {{"MO", Int64.Type}, {"WEEK", Int64.Type}, {"TGL BOOKING", type date}, {"PNR", type text}, {"NAMA GROUP", type text}, {"AGENT TRAVEL", type text}, {"AGENT/CORP/PRIVATE", type text}, {"DEPT.DATE", type date}, {"RETURN DATE", type date}, {"ROUTE", type text}, {"DEST", type text}, {"DOM/INT", type text}, {"TTL PAX", Int64.Type}, {"MARKET", type text}, {"APPROVED SKN FARE - IDR.", Int64.Type}, {"YQ", Int64.Type}, {"TAX ++", Int64.Type}, {"NETT SALES", Int64.Type}, {"Nett Sales ( basic + yq )", Int64.Type}, {"Total sales ( nett x ttl pax )", Int64.Type}, {"FARE BASIC", type text}, {"STATUS", type text}, {"DATE OF DEPOSIT", type date}, {"JMLH PAX DEPO", Int64.Type}, {"JLMH DEPOSIT(idr)", Int64.Type}, {"REASON CANCEL", type text}, {"CORP CODE", type text}, {"TIME LIMIT", type date}, {"POI", type text}, {"DOI", type date}}, "en-US")
+					    Nulls = Table.ReplaceValue(Promoted, "", null, Replacer.ReplaceValue, Table.ColumnNames(Promoted)),
+					    Typed = Table.TransformColumnTypes(Nulls, {{"MO", Int64.Type}, {"WEEK", Int64.Type}, {"TGL BOOKING", type date}, {"PNR", type text}, {"NAMA GROUP", type text}, {"AGENT TRAVEL", type text}, {"AGENT/CORP/PRIVATE", type text}, {"DEPT.DATE", type date}, {"RETURN DATE", type date}, {"ROUTE", type text}, {"DEST", type text}, {"DOM/INT", type text}, {"TTL PAX", Int64.Type}, {"MARKET", type text}, {"APPROVED SKN FARE - IDR.", Int64.Type}, {"YQ", Int64.Type}, {"TAX ++", Int64.Type}, {"NETT SALES", Int64.Type}, {"Nett Sales ( basic + yq )", Int64.Type}, {"Total sales ( nett x ttl pax )", Int64.Type}, {"FARE BASIC", type text}, {"STATUS", type text}, {"DATE OF DEPOSIT", type date}, {"JMLH PAX DEPO", Int64.Type}, {"JLMH DEPOSIT(idr)", Int64.Type}, {"REASON CANCEL", type text}, {"CORP CODE", type text}, {"TIME LIMIT", type date}, {"POI", type text}, {"DOI", type date}}, "en-US")
 					in
 					    Typed
 
@@ -1293,6 +1304,16 @@ createOrReplace
 				    CALCULATE ( [Revenue TY], REMOVEFILTERS ( SalesFlown[SERVICE TYPE] ) )
 				)
 			formatString: 0%
+			displayFolder: 7 Mix
+
+		measure 'Corporate Revenue TY' =
+				CALCULATE ( [Revenue TY], SalesFlown[CORP SHARE] = "Corp" )
+			formatString: #,0
+			displayFolder: 7 Mix
+
+		measure 'Corporate Revenue LY' =
+				CALCULATE ( [Revenue LY], SalesFlown[CORP SHARE] = "Corp" )
+			formatString: #,0
 			displayFolder: 7 Mix
 
 		measure 'Corporate Share %' =

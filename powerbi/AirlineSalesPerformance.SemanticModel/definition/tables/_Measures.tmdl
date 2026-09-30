@@ -1,0 +1,547 @@
+table _Measures
+
+	measure _MaxDateInData =
+			CALCULATE ( MAX ( SalesFlown[DATES] ), ALL ( SalesFlown ) )
+		formatString: dd mmm yyyy
+		displayFolder: 0 Helpers
+
+	measure _MaxDateInContext =
+			MAX ( SalesFlown[DATES] )
+		formatString: dd mmm yyyy
+		displayFolder: 0 Helpers
+
+	measure _TargetDate =
+			[_MaxDateInContext]
+		formatString: dd mmm yyyy
+		displayFolder: 0 Helpers
+
+	measure _MaxWeek =
+			MAX ( SalesFlown[WEEK NUM] )
+		formatString: 0
+		displayFolder: 0 Helpers
+
+	measure _MaxTravelDateInData =
+			CALCULATE ( MAX ( SalesFlown[DATE TRAVEL] ), ALL ( SalesFlown ) )
+		formatString: dd mmm yyyy
+		displayFolder: 0 Helpers
+
+	measure 'Data As Of' =
+			VAR MaxDateInContext = [_MaxDateInContext]
+			VAR MaxDateInData = [_MaxDateInData]
+			VAR AllMonthsSelected =
+			    COUNTROWS ( VALUES ( DateTable[MonthNumber] ) ) = COUNTROWS ( ALL ( DateTable[MonthNumber] ) )
+			RETURN
+			    IF ( AllMonthsSelected, MaxDateInData, MaxDateInContext )
+		formatString: dd mmm yyyy
+		displayFolder: 0 Helpers
+
+	measure Revenue =
+			SUM ( SalesFlown[NETT USD] )
+		formatString: #,0
+		displayFolder: 1 Base
+
+	measure Pax =
+			SUM ( SalesFlown[PAX] )
+		formatString: #,0
+		displayFolder: 1 Base
+
+	measure 'Avg Fare' =
+			DIVIDE ( [Revenue], [Pax] )
+		formatString: #,0
+		displayFolder: 1 Base
+
+	measure 'Revenue TY' =
+			VAR CutoffDate = [_MaxDateInData]
+			RETURN
+			    CALCULATE ( [Revenue], KEEPFILTERS ( DateTable[Date] <= CutoffDate ) )
+		formatString: #,0
+		displayFolder: 2 TY vs LY
+
+	measure 'Revenue LY' =
+			VAR CutoffDateLY = EDATE ( [_MaxDateInData], -12 )
+			RETURN
+			    CALCULATE (
+			        [Revenue],
+			        SAMEPERIODLASTYEAR ( DateTable[Date] ),
+			        KEEPFILTERS ( DateTable[Date] <= CutoffDateLY )
+			    )
+		formatString: #,0
+		displayFolder: 2 TY vs LY
+
+	measure 'Revenue YoY' =
+			[Revenue TY] - [Revenue LY]
+		formatString: #,0
+		displayFolder: 2 TY vs LY
+
+	measure 'Revenue YoY %' =
+			DIVIDE ( [Revenue TY] - [Revenue LY], [Revenue LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 2 TY vs LY
+
+	measure 'Pax TY' =
+			VAR CutoffDate = [_MaxDateInData]
+			RETURN
+			    CALCULATE ( [Pax], KEEPFILTERS ( DateTable[Date] <= CutoffDate ) )
+		formatString: #,0
+		displayFolder: 2 TY vs LY
+
+	measure 'Pax LY' =
+			VAR CutoffDateLY = EDATE ( [_MaxDateInData], -12 )
+			RETURN
+			    CALCULATE (
+			        [Pax],
+			        SAMEPERIODLASTYEAR ( DateTable[Date] ),
+			        KEEPFILTERS ( DateTable[Date] <= CutoffDateLY )
+			    )
+		formatString: #,0
+		displayFolder: 2 TY vs LY
+
+	measure 'Pax YoY' =
+			[Pax TY] - [Pax LY]
+		formatString: #,0
+		displayFolder: 2 TY vs LY
+
+	measure 'Pax YoY %' =
+			DIVIDE ( [Pax TY] - [Pax LY], [Pax LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 2 TY vs LY
+
+	measure 'Avg Fare TY' =
+			DIVIDE ( [Revenue TY], [Pax TY] )
+		formatString: #,0
+		displayFolder: 2 TY vs LY
+
+	measure 'Avg Fare LY' =
+			DIVIDE ( [Revenue LY], [Pax LY] )
+		formatString: #,0
+		displayFolder: 2 TY vs LY
+
+	measure 'Avg Fare YoY' =
+			[Avg Fare TY] - [Avg Fare LY]
+		formatString: #,0
+		displayFolder: 2 TY vs LY
+
+	measure 'Avg Fare YoY %' =
+			DIVIDE ( [Avg Fare TY] - [Avg Fare LY], [Avg Fare LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 2 TY vs LY
+
+	measure 'Revenue Same Date LY' =
+			VAR CurrentDate = MAX ( DateTable[Date] )
+			RETURN
+			    IF (
+			        CurrentDate <= [_MaxDateInData],
+			        CALCULATE ( [Revenue], ALL ( DateTable ), DateTable[Date] = EDATE ( CurrentDate, -12 ) )
+			    )
+		formatString: #,0
+		displayFolder: 2 TY vs LY
+
+	measure 'Revenue MTD' =
+			VAR TargetDate = [_TargetDate]
+			RETURN
+			    CALCULATE ( TOTALMTD ( [Revenue], DateTable[Date] ), DateTable[Date] <= TargetDate )
+		formatString: #,0
+		displayFolder: 3 MTD YTD
+
+	measure 'Revenue MTD LY' =
+			VAR TargetDateLY = EDATE ( [_TargetDate], -12 )
+			RETURN
+			    CALCULATE (
+			        [Revenue],
+			        ALL ( DateTable ),
+			        DATESBETWEEN ( DateTable[Date], DATE ( YEAR ( TargetDateLY ), MONTH ( TargetDateLY ), 1 ), TargetDateLY )
+			    )
+		formatString: #,0
+		displayFolder: 3 MTD YTD
+
+	measure 'Revenue MTD YoY %' =
+			DIVIDE ( [Revenue MTD] - [Revenue MTD LY], [Revenue MTD LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 3 MTD YTD
+
+	measure 'Revenue YTD' =
+			VAR TargetDate = [_TargetDate]
+			RETURN
+			    CALCULATE ( TOTALYTD ( [Revenue], DateTable[Date] ), DateTable[Date] <= TargetDate )
+		formatString: #,0
+		displayFolder: 3 MTD YTD
+
+	measure 'Revenue YTD LY' =
+			VAR TargetDateLY = EDATE ( [_TargetDate], -12 )
+			RETURN
+			    CALCULATE (
+			        [Revenue],
+			        ALL ( DateTable ),
+			        DATESBETWEEN ( DateTable[Date], DATE ( YEAR ( TargetDateLY ), 1, 1 ), TargetDateLY )
+			    )
+		formatString: #,0
+		displayFolder: 3 MTD YTD
+
+	measure 'Revenue YTD YoY %' =
+			DIVIDE ( [Revenue YTD] - [Revenue YTD LY], [Revenue YTD LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 3 MTD YTD
+
+	measure 'Pax MTD' =
+			VAR TargetDate = [_TargetDate]
+			RETURN
+			    CALCULATE ( TOTALMTD ( [Pax], DateTable[Date] ), DateTable[Date] <= TargetDate )
+		formatString: #,0
+		displayFolder: 3 MTD YTD
+
+	measure 'Pax MTD LY' =
+			VAR TargetDateLY = EDATE ( [_TargetDate], -12 )
+			RETURN
+			    CALCULATE (
+			        [Pax],
+			        ALL ( DateTable ),
+			        DATESBETWEEN ( DateTable[Date], DATE ( YEAR ( TargetDateLY ), MONTH ( TargetDateLY ), 1 ), TargetDateLY )
+			    )
+		formatString: #,0
+		displayFolder: 3 MTD YTD
+
+	measure 'Pax MTD YoY %' =
+			DIVIDE ( [Pax MTD] - [Pax MTD LY], [Pax MTD LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 3 MTD YTD
+
+	measure 'Pax YTD' =
+			VAR TargetDate = [_TargetDate]
+			RETURN
+			    CALCULATE ( TOTALYTD ( [Pax], DateTable[Date] ), DateTable[Date] <= TargetDate )
+		formatString: #,0
+		displayFolder: 3 MTD YTD
+
+	measure 'Pax YTD LY' =
+			VAR TargetDateLY = EDATE ( [_TargetDate], -12 )
+			RETURN
+			    CALCULATE (
+			        [Pax],
+			        ALL ( DateTable ),
+			        DATESBETWEEN ( DateTable[Date], DATE ( YEAR ( TargetDateLY ), 1, 1 ), TargetDateLY )
+			    )
+		formatString: #,0
+		displayFolder: 3 MTD YTD
+
+	measure 'Pax YTD YoY %' =
+			DIVIDE ( [Pax YTD] - [Pax YTD LY], [Pax YTD LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 3 MTD YTD
+
+	measure 'Avg Fare MTD' =
+			DIVIDE ( [Revenue MTD], [Pax MTD] )
+		formatString: #,0
+		displayFolder: 3 MTD YTD
+
+	measure 'Avg Fare MTD LY' =
+			DIVIDE ( [Revenue MTD LY], [Pax MTD LY] )
+		formatString: #,0
+		displayFolder: 3 MTD YTD
+
+	measure 'Avg Fare MTD YoY %' =
+			DIVIDE ( [Avg Fare MTD] - [Avg Fare MTD LY], [Avg Fare MTD LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 3 MTD YTD
+
+	measure 'Avg Fare YTD' =
+			DIVIDE ( [Revenue YTD], [Pax YTD] )
+		formatString: #,0
+		displayFolder: 3 MTD YTD
+
+	measure 'Avg Fare YTD LY' =
+			DIVIDE ( [Revenue YTD LY], [Pax YTD LY] )
+		formatString: #,0
+		displayFolder: 3 MTD YTD
+
+	measure 'Avg Fare YTD YoY %' =
+			DIVIDE ( [Avg Fare YTD] - [Avg Fare YTD LY], [Avg Fare YTD LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 3 MTD YTD
+
+	measure 'Revenue Selected Period' =
+			SWITCH (
+			    SELECTEDVALUE ( PeriodSelector[Period], "MTD" ),
+			    "MTD", [Revenue MTD],
+			    "YTD", [Revenue YTD]
+			)
+		formatString: #,0
+		displayFolder: 4 Period Switch
+
+	measure 'Revenue Selected Period LY' =
+			SWITCH (
+			    SELECTEDVALUE ( PeriodSelector[Period], "MTD" ),
+			    "MTD", [Revenue MTD LY],
+			    "YTD", [Revenue YTD LY]
+			)
+		formatString: #,0
+		displayFolder: 4 Period Switch
+
+	measure 'Revenue Selected Period YoY' =
+			[Revenue Selected Period] - [Revenue Selected Period LY]
+		formatString: #,0
+		displayFolder: 4 Period Switch
+
+	measure 'Revenue Selected Period YoY %' =
+			DIVIDE ( [Revenue Selected Period] - [Revenue Selected Period LY], [Revenue Selected Period LY] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 4 Period Switch
+
+	measure 'Revenue P1' =
+			CALCULATE (
+			    SUM ( SalesFlown[NETT USD] ),
+			    KEEPFILTERS ( TREATAS ( VALUES ( Calendar_Slicer1[Date] ), DateTable[Date] ) )
+			)
+		formatString: #,0
+		displayFolder: 5 Period vs Period
+
+	measure 'Pax P1' =
+			CALCULATE (
+			    SUM ( SalesFlown[PAX] ),
+			    KEEPFILTERS ( TREATAS ( VALUES ( Calendar_Slicer1[Date] ), DateTable[Date] ) )
+			)
+		formatString: #,0
+		displayFolder: 5 Period vs Period
+
+	measure 'Revenue P2' =
+			CALCULATE (
+			    SUM ( SalesFlown[NETT USD] ),
+			    KEEPFILTERS ( TREATAS ( VALUES ( Calendar_Slicer2[Date] ), DateTable[Date] ) )
+			)
+		formatString: #,0
+		displayFolder: 5 Period vs Period
+
+	measure 'Pax P2' =
+			CALCULATE (
+			    SUM ( SalesFlown[PAX] ),
+			    KEEPFILTERS ( TREATAS ( VALUES ( Calendar_Slicer2[Date] ), DateTable[Date] ) )
+			)
+		formatString: #,0
+		displayFolder: 5 Period vs Period
+
+	measure 'Avg Fare P1' =
+			DIVIDE ( [Revenue P1], [Pax P1] )
+		formatString: #,0
+		displayFolder: 5 Period vs Period
+
+	measure 'Avg Fare P2' =
+			DIVIDE ( [Revenue P2], [Pax P2] )
+		formatString: #,0
+		displayFolder: 5 Period vs Period
+
+	measure 'Revenue P2 vs P1' =
+			[Revenue P2] - [Revenue P1]
+		formatString: #,0
+		displayFolder: 5 Period vs Period
+
+	measure 'Revenue P2 vs P1 %' =
+			DIVIDE ( [Revenue P2] - [Revenue P1], [Revenue P1] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 5 Period vs Period
+
+	measure 'Pax P2 vs P1' =
+			[Pax P2] - [Pax P1]
+		formatString: #,0
+		displayFolder: 5 Period vs Period
+
+	measure 'Pax P2 vs P1 %' =
+			DIVIDE ( [Pax P2] - [Pax P1], [Pax P1] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 5 Period vs Period
+
+	measure 'Avg Fare P2 vs P1 %' =
+			DIVIDE ( [Avg Fare P2] - [Avg Fare P1], [Avg Fare P1] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 5 Period vs Period
+
+	measure 'Revenue PO P1' =
+			CALCULATE (
+			    SUM ( SalesFlown[NETT USD] ),
+			    KEEPFILTERS ( TREATAS ( VALUES ( Calendar_Slicer_PO1[Date] ), DateTable[Date] ) )
+			)
+		formatString: #,0
+		displayFolder: 5 Period vs Period
+
+	measure 'Pax PO P1' =
+			CALCULATE (
+			    SUM ( SalesFlown[PAX] ),
+			    KEEPFILTERS ( TREATAS ( VALUES ( Calendar_Slicer_PO1[Date] ), DateTable[Date] ) )
+			)
+		formatString: #,0
+		displayFolder: 5 Period vs Period
+
+	measure 'Revenue PO P2' =
+			CALCULATE (
+			    SUM ( SalesFlown[NETT USD] ),
+			    KEEPFILTERS ( TREATAS ( VALUES ( Calendar_Slicer_PO2[Date] ), DateTable[Date] ) )
+			)
+		formatString: #,0
+		displayFolder: 5 Period vs Period
+
+	measure 'Pax PO P2' =
+			CALCULATE (
+			    SUM ( SalesFlown[PAX] ),
+			    KEEPFILTERS ( TREATAS ( VALUES ( Calendar_Slicer_PO2[Date] ), DateTable[Date] ) )
+			)
+		formatString: #,0
+		displayFolder: 5 Period vs Period
+
+	measure 'Revenue PO P2 vs P1 %' =
+			DIVIDE ( [Revenue PO P2] - [Revenue PO P1], [Revenue PO P1] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 6 Pull Out
+
+	measure 'Pax PO P2 vs P1 %' =
+			DIVIDE ( [Pax PO P2] - [Pax PO P1], [Pax PO P1] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 6 Pull Out
+
+	measure 'Pull Out Revenue Recaptured %' =
+			VAR LostOnPulledRoutes =
+			    CALCULATE ( [Revenue PO P1] - [Revenue PO P2], DimRoute[status] = "Pull Out" )
+			VAR GainOnActiveRoutes =
+			    CALCULATE ( [Revenue PO P2] - [Revenue PO P1], DimRoute[status] = "Active" )
+			RETURN
+			    DIVIDE ( GainOnActiveRoutes, LostOnPulledRoutes )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 6 Pull Out
+
+	measure 'Domestic %' =
+			DIVIDE (
+			    CALCULATE ( [Revenue TY], SalesFlown[SERVICE TYPE] = "DOM" ),
+			    CALCULATE ( [Revenue TY], REMOVEFILTERS ( SalesFlown[SERVICE TYPE] ) )
+			)
+		formatString: 0%
+		displayFolder: 7 Mix
+
+	measure 'International %' =
+			DIVIDE (
+			    CALCULATE ( [Revenue TY], SalesFlown[SERVICE TYPE] = "INT" ),
+			    CALCULATE ( [Revenue TY], REMOVEFILTERS ( SalesFlown[SERVICE TYPE] ) )
+			)
+		formatString: 0%
+		displayFolder: 7 Mix
+
+	measure 'Corporate Revenue TY' =
+			CALCULATE ( [Revenue TY], SalesFlown[CORP SHARE] = "Corp" )
+		formatString: #,0
+		displayFolder: 7 Mix
+
+	measure 'Corporate Revenue LY' =
+			CALCULATE ( [Revenue LY], SalesFlown[CORP SHARE] = "Corp" )
+		formatString: #,0
+		displayFolder: 7 Mix
+
+	measure 'Corporate Share %' =
+			DIVIDE (
+			    CALCULATE ( [Revenue TY], SalesFlown[CORP SHARE] = "Corp" ),
+			    CALCULATE ( [Revenue TY], REMOVEFILTERS ( SalesFlown[CORP SHARE] ) )
+			)
+		formatString: 0%
+		displayFolder: 7 Mix
+
+	measure 'Fare Family Share %' =
+			DIVIDE ( [Revenue TY], CALCULATE ( [Revenue TY], REMOVEFILTERS ( SubclassSortOrder ) ) )
+		formatString: 0%
+		displayFolder: 7 Mix
+
+	measure 'FPA JCDI %' =
+			CALCULATE ( [Fare Family Share %], SubclassSortOrder[FareFamily] = "FPA JCDI" )
+		formatString: 0%
+		displayFolder: 7 Mix
+
+	measure 'ROX %' =
+			CALCULATE ( [Fare Family Share %], SubclassSortOrder[FareFamily] = "ROX" )
+		formatString: 0%
+		displayFolder: 7 Mix
+
+	measure 'Y %' =
+			CALCULATE ( [Fare Family Share %], SubclassSortOrder[FareFamily] = "Y" )
+		formatString: 0%
+		displayFolder: 7 Mix
+
+	measure 'WBMKN %' =
+			CALCULATE ( [Fare Family Share %], SubclassSortOrder[FareFamily] = "WBMKN" )
+		formatString: 0%
+		displayFolder: 7 Mix
+
+	measure 'QTV %' =
+			CALCULATE ( [Fare Family Share %], SubclassSortOrder[FareFamily] = "QTV" )
+		formatString: 0%
+		displayFolder: 7 Mix
+
+	measure 'SHL %' =
+			CALCULATE ( [Fare Family Share %], SubclassSortOrder[FareFamily] = "SHL" )
+		formatString: 0%
+		displayFolder: 7 Mix
+
+	measure 'Pax by Travel Date TY' =
+			VAR CutoffDate = [_MaxTravelDateInData]
+			RETURN
+			    CALCULATE ( [Pax], KEEPFILTERS ( DateFlown[Date] <= CutoffDate ) )
+		formatString: #,0
+		displayFolder: 8 Travel Date
+
+	measure 'Pax by Travel Date LY' =
+			VAR CutoffDateLY = EDATE ( [_MaxTravelDateInData], -12 )
+			RETURN
+			    CALCULATE (
+			        [Pax],
+			        SAMEPERIODLASTYEAR ( DateFlown[Date] ),
+			        KEEPFILTERS ( DateFlown[Date] <= CutoffDateLY )
+			    )
+		formatString: #,0
+		displayFolder: 8 Travel Date
+
+	measure 'Pax by Travel Date YoY %' =
+			DIVIDE ( [Pax by Travel Date TY] - [Pax by Travel Date LY], [Pax by Travel Date LY] )
+		formatString: 0%
+		displayFolder: 8 Travel Date
+
+	measure '% of Total Pax (Lead Time)' =
+			DIVIDE ( SUM ( SalesToFlown[pax] ), CALCULATE ( SUM ( SalesToFlown[pax] ), ALLSELECTED () ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 9 Lead Time & BLF
+
+	measure 'Avg Lead Time (days)' =
+			DIVIDE (
+			    SUMX ( SalesToFlown, SalesToFlown[sales_to_flown] * SalesToFlown[pax] ),
+			    SUM ( SalesToFlown[pax] )
+			)
+		formatString: 0.0
+		displayFolder: 9 Lead Time & BLF
+
+	measure 'BLF %' =
+			DIVIDE ( SUM ( BookingPosition[Book_Total] ), SUM ( BookingPosition[Capacity_Total] ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 9 Lead Time & BLF
+
+	measure 'Seats Unsold' =
+			SUM ( BookingPosition[Capacity_Total] ) - SUM ( BookingPosition[Book_Total] )
+		formatString: #,0
+		displayFolder: 9 Lead Time & BLF
+
+	measure 'Group Pax Confirmed' =
+			CALCULATE ( SUM ( GroupBooking[TTL PAX] ), GroupBooking[STATUS] IN { "TICKETED", "DEPOSIT" } )
+		formatString: #,0
+		displayFolder: 10 Group Booking
+
+	measure 'Group Sales IDR' =
+			CALCULATE ( SUM ( GroupBooking[Total sales ( nett x ttl pax )] ), GroupBooking[STATUS] IN { "TICKETED", "DEPOSIT" } )
+		formatString: #,0
+		displayFolder: 10 Group Booking
+
+	measure 'Group Cancel Rate %' =
+			DIVIDE ( CALCULATE ( COUNTROWS ( GroupBooking ), GroupBooking[STATUS] = "CANCELLED" ), COUNTROWS ( GroupBooking ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 10 Group Booking
+
+	column Placeholder
+		isHidden
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Placeholder]
+
+	partition _Measures = calculated
+		mode: import
+		source =
+				ROW ( "Placeholder", BLANK () )

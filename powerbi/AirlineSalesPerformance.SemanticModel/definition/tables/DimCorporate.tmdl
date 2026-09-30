@@ -1,0 +1,32 @@
+table DimCorporate
+
+	column 'CORP CODE'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: CORP CODE
+
+	column CORPORATE_NAME
+		dataType: string
+		summarizeBy: none
+		sourceColumn: CORPORATE_NAME
+
+	column CORPORATE_CLUSTER
+		dataType: string
+		summarizeBy: none
+		sourceColumn: CORPORATE_CLUSTER
+
+	column INDUSTRY_TYPE
+		dataType: string
+		summarizeBy: none
+		sourceColumn: INDUSTRY_TYPE
+
+	partition DimCorporate = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "\dim_corporate.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Nulls = Table.ReplaceValue(Promoted, "", null, Replacer.ReplaceValue, Table.ColumnNames(Promoted)),
+				    Typed = Table.TransformColumnTypes(Nulls, {{"CORP CODE", type text}, {"CORPORATE_NAME", type text}, {"CORPORATE_CLUSTER", type text}, {"INDUSTRY_TYPE", type text}}, "en-US")
+				in
+				    Typed

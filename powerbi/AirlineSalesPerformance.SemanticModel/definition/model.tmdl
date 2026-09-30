@@ -1,0 +1,30 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	discourageImplicitMeasures
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_QueryOrder = ["SalesFlown", "DimCorporate", "DimBranchRegion", "DimRoute", "BookingPosition", "SalesToFlown", "GroupBooking"]
+
+ref table SalesFlown
+ref table DimCorporate
+ref table DimBranchRegion
+ref table DimRoute
+ref table BookingPosition
+ref table SalesToFlown
+ref table GroupBooking
+ref table DateTable
+ref table DateFlown
+ref table ValTypeTable
+ref table PeriodSelector
+ref table SubclassSortOrder
+ref table Calendar_Slicer1
+ref table Calendar_Slicer2
+ref table Calendar_Slicer_PO1
+ref table Calendar_Slicer_PO2
+ref table _Measures

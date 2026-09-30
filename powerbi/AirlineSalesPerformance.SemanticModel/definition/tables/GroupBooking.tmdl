@@ -1,0 +1,179 @@
+table GroupBooking
+
+	column MO
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: MO
+
+	column WEEK
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: WEEK
+
+	column 'TGL BOOKING'
+		dataType: dateTime
+		formatString: dd mmm yyyy
+		summarizeBy: none
+		sourceColumn: TGL BOOKING
+
+	column PNR
+		dataType: string
+		summarizeBy: none
+		sourceColumn: PNR
+
+	column 'NAMA GROUP'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: NAMA GROUP
+
+	column 'AGENT TRAVEL'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: AGENT TRAVEL
+
+	column 'AGENT/CORP/PRIVATE'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: AGENT/CORP/PRIVATE
+
+	column 'DEPT.DATE'
+		dataType: dateTime
+		formatString: dd mmm yyyy
+		summarizeBy: none
+		sourceColumn: DEPT.DATE
+
+	column 'RETURN DATE'
+		dataType: dateTime
+		formatString: dd mmm yyyy
+		summarizeBy: none
+		sourceColumn: RETURN DATE
+
+	column ROUTE
+		dataType: string
+		summarizeBy: none
+		sourceColumn: ROUTE
+
+	column DEST
+		dataType: string
+		summarizeBy: none
+		sourceColumn: DEST
+
+	column 'DOM/INT'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: DOM/INT
+
+	column 'TTL PAX'
+		dataType: int64
+		formatString: #,0
+		summarizeBy: sum
+		sourceColumn: TTL PAX
+
+	column MARKET
+		dataType: string
+		summarizeBy: none
+		sourceColumn: MARKET
+
+	column 'APPROVED SKN FARE - IDR.'
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: APPROVED SKN FARE - IDR.
+
+	column YQ
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: YQ
+
+	column 'TAX ++'
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: TAX ++
+
+	column 'NETT SALES'
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: NETT SALES
+
+	column 'Nett Sales ( basic + yq )'
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: Nett Sales ( basic + yq )
+
+	column 'Total sales ( nett x ttl pax )'
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: Total sales ( nett x ttl pax )
+
+	column 'FARE BASIC'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: FARE BASIC
+
+	column STATUS
+		dataType: string
+		summarizeBy: none
+		sourceColumn: STATUS
+
+	column 'DATE OF DEPOSIT'
+		dataType: dateTime
+		formatString: dd mmm yyyy
+		summarizeBy: none
+		sourceColumn: DATE OF DEPOSIT
+
+	column 'JMLH PAX DEPO'
+		dataType: int64
+		formatString: #,0
+		summarizeBy: sum
+		sourceColumn: JMLH PAX DEPO
+
+	column 'JLMH DEPOSIT(idr)'
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: JLMH DEPOSIT(idr)
+
+	column 'REASON CANCEL'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: REASON CANCEL
+
+	column 'CORP CODE'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: CORP CODE
+
+	column 'TIME LIMIT'
+		dataType: dateTime
+		formatString: dd mmm yyyy
+		summarizeBy: none
+		sourceColumn: TIME LIMIT
+
+	column POI
+		dataType: string
+		summarizeBy: none
+		sourceColumn: POI
+
+	column DOI
+		dataType: dateTime
+		formatString: dd mmm yyyy
+		summarizeBy: none
+		sourceColumn: DOI
+
+	partition GroupBooking = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "\group_bookings.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Nulls = Table.ReplaceValue(Promoted, "", null, Replacer.ReplaceValue, Table.ColumnNames(Promoted)),
+				    Typed = Table.TransformColumnTypes(Nulls, {{"MO", Int64.Type}, {"WEEK", Int64.Type}, {"TGL BOOKING", type date}, {"PNR", type text}, {"NAMA GROUP", type text}, {"AGENT TRAVEL", type text}, {"AGENT/CORP/PRIVATE", type text}, {"DEPT.DATE", type date}, {"RETURN DATE", type date}, {"ROUTE", type text}, {"DEST", type text}, {"DOM/INT", type text}, {"TTL PAX", Int64.Type}, {"MARKET", type text}, {"APPROVED SKN FARE - IDR.", Int64.Type}, {"YQ", Int64.Type}, {"TAX ++", Int64.Type}, {"NETT SALES", Int64.Type}, {"Nett Sales ( basic + yq )", Int64.Type}, {"Total sales ( nett x ttl pax )", Int64.Type}, {"FARE BASIC", type text}, {"STATUS", type text}, {"DATE OF DEPOSIT", type date}, {"JMLH PAX DEPO", Int64.Type}, {"JLMH DEPOSIT(idr)", Int64.Type}, {"REASON CANCEL", type text}, {"CORP CODE", type text}, {"TIME LIMIT", type date}, {"POI", type text}, {"DOI", type date}}, "en-US")
+				in
+				    Typed

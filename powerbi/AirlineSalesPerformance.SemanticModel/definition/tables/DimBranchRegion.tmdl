@@ -1,0 +1,22 @@
+table DimBranchRegion
+
+	column BO
+		dataType: string
+		summarizeBy: none
+		sourceColumn: BO
+
+	column REGION
+		dataType: string
+		summarizeBy: none
+		sourceColumn: REGION
+
+	partition DimBranchRegion = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "\dim_branch_region.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Nulls = Table.ReplaceValue(Promoted, "", null, Replacer.ReplaceValue, Table.ColumnNames(Promoted)),
+				    Typed = Table.TransformColumnTypes(Nulls, {{"BO", type text}, {"REGION", type text}}, "en-US")
+				in
+				    Typed

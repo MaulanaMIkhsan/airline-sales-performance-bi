@@ -36,6 +36,7 @@ M_TYPE = {"string":"type text","int64":"Int64.Type","double":"type number","date
 TMDL_TYPE = {"string":"string","int64":"int64","double":"double","date":"dateTime","dateTime":"dateTime"}
 # ---------------------------------------------------------------- calculated columns
 CALC_COLUMNS = {
+    "BookingPosition": [("Departure Month", 'FORMAT ( BookingPosition[STD], "yyyy-mm" )', None)],
     "SalesFlown": [
         ("Route Status", "RELATED ( DimRoute[status] )", None),
         ("POO Classification", 'IF ( SalesFlown[BRANCH OFFICE] = SalesFlown[BO POO], "POO", "Non POO" )', None),
@@ -280,6 +281,8 @@ RETURN
     CALCULATE ( [Revenue TY], SalesFlown[SERVICE TYPE] = "INT" ),
     CALCULATE ( [Revenue TY], REMOVEFILTERS ( SalesFlown[SERVICE TYPE] ) )
 )""",""),
+    ("_Measures","7 Mix","Corporate Revenue TY",F0,'CALCULATE ( [Revenue TY], SalesFlown[CORP SHARE] = "Corp" )',"Corporate deals only, so a (Blank) cluster never shows up on corporate visuals."),
+    ("_Measures","7 Mix","Corporate Revenue LY",F0,'CALCULATE ( [Revenue LY], SalesFlown[CORP SHARE] = "Corp" )',""),
     ("_Measures","7 Mix","Corporate Share %","0%","""DIVIDE (
     CALCULATE ( [Revenue TY], SalesFlown[CORP SHARE] = "Corp" ),
     CALCULATE ( [Revenue TY], REMOVEFILTERS ( SalesFlown[CORP SHARE] ) )
@@ -326,7 +329,8 @@ def m_query(table):
     return f"""let
     Source = Csv.Document(File.Contents(DataFolder & "\\{fname}"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
     Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-    Typed = Table.TransformColumnTypes(Promoted, {{{types}}}, "en-US")
+    Nulls = Table.ReplaceValue(Promoted, "", null, Replacer.ReplaceValue, Table.ColumnNames(Promoted)),
+    Typed = Table.TransformColumnTypes(Nulls, {{{types}}}, "en-US")
 in
     Typed"""
 def measure_block(tbl):

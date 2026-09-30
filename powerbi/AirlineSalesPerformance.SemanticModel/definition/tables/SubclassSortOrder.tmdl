@@ -1,0 +1,38 @@
+table SubclassSortOrder
+
+	column BookingClass
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [BookingClass]
+		sortByColumn: SortOrder
+
+	column SortOrder
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [SortOrder]
+
+	column Cabin
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Cabin]
+
+	column FareFamily
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [FareFamily]
+
+	partition SubclassSortOrder = calculated
+		mode: import
+		source =
+				DATATABLE (
+				    "BookingClass", STRING, "SortOrder", INTEGER, "Cabin", STRING, "FareFamily", STRING,
+				    {
+				        { "F", 1, "First", "FPA JCDI" }, { "R", 2, "First", "ROX" }, { "P", 3, "First", "FPA JCDI" }, { "A", 4, "First", "FPA JCDI" },
+				        { "J", 5, "Business", "FPA JCDI" }, { "C", 6, "Business", "FPA JCDI" }, { "D", 7, "Business", "FPA JCDI" },
+				        { "O", 8, "Business", "ROX" }, { "I", 9, "Business", "FPA JCDI" }, { "Z", 10, "Business", "Other" },
+				        { "Y", 11, "Economy", "Y" }, { "W", 12, "Economy", "WBMKN" }, { "B", 13, "Economy", "WBMKN" }, { "M", 14, "Economy", "WBMKN" },
+				        { "K", 15, "Economy", "WBMKN" }, { "N", 16, "Economy", "WBMKN" }, { "G", 17, "Economy", "Other" }, { "Q", 18, "Economy", "QTV" },
+				        { "T", 19, "Economy", "QTV" }, { "V", 20, "Economy", "QTV" }, { "S", 21, "Economy", "SHL" }, { "H", 22, "Economy", "SHL" },
+				        { "L", 23, "Economy", "SHL" }, { "E", 24, "Economy", "Other" }, { "U", 25, "Economy", "Other" }, { "X", 26, "Economy", "ROX" }
+				    }
+				)

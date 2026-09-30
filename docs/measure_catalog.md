@@ -1,6 +1,6 @@
 # Measure catalog
 
-82 measures, all stored in the `_Measures` table and grouped by display folder.
+84 measures, all stored in the `_Measures` table and grouped by display folder.
 
 
 ## 0 Helpers
@@ -106,6 +106,8 @@
 |---|---|---|
 | `Domestic %` | `0%` | Fix vs original: denominator removes the service filter, so the % stays correct when a DOM/INT slicer is used. |
 | `International %` | `0%` |  |
+| `Corporate Revenue TY` | `#,0` | Corporate deals only, so a (Blank) cluster never shows up on corporate visuals. |
+| `Corporate Revenue LY` | `#,0` |  |
 | `Corporate Share %` | `0%` |  |
 | `Fare Family Share %` | `0%` | Put SubclassSortOrder[FareFamily] or [BookingClass] on rows/columns. Replaces 26 copy-paste 'RBD x' measures plus 6 fare-family % measures. |
 | `FPA JCDI %` | `0%` | Card-friendly shortcut over Fare Family Share %. |

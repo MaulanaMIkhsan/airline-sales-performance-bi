@@ -1,0 +1,1 @@
+expression DataFolder = "C:\airline-sales-performance-bi\data\model" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]

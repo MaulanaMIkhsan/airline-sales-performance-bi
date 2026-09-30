@@ -1,0 +1,95 @@
+table SalesToFlown
+
+	column route_vv
+		dataType: string
+		summarizeBy: none
+		sourceColumn: route_vv
+
+	column servicetypecode
+		dataType: string
+		summarizeBy: none
+		sourceColumn: servicetypecode
+
+	column sales_to_flown
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: sales_to_flown
+
+	column trip_duration
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: trip_duration
+
+	column trip_type
+		dataType: string
+		summarizeBy: none
+		sourceColumn: trip_type
+
+	column year
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: year
+
+	column pax
+		dataType: int64
+		formatString: #,0
+		summarizeBy: sum
+		sourceColumn: pax
+
+	column 'Trip Duration Group' =
+			SWITCH (
+			    TRUE (),
+			    SalesToFlown[trip_type] = "OW", "One Way",
+			    SalesToFlown[trip_duration] <= 3, "1-3 Days",
+			    SalesToFlown[trip_duration] <= 7, "4-7 Days",
+			    SalesToFlown[trip_duration] <= 14, "8-14 Days",
+			    ">14 Days"
+			)
+		summarizeBy: none
+		sortByColumn: 'Trip Duration Sort'
+
+	column 'Trip Duration Sort' =
+			SWITCH (
+			    TRUE (),
+			    SalesToFlown[trip_type] = "OW", 0,
+			    SalesToFlown[trip_duration] <= 3, 1,
+			    SalesToFlown[trip_duration] <= 7, 2,
+			    SalesToFlown[trip_duration] <= 14, 3,
+			    4
+			)
+		summarizeBy: none
+
+	column 'Sales to Flown Group' =
+			VAR d = SalesToFlown[sales_to_flown]
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        d = 0, "H",
+			        d <= 7, "H-" & d,
+			        d <= 30, "H-(8-30)",
+			        d <= 60, "H-(31-60)",
+			        d <= 120, "H-(61-120)",
+			        "H-121+"
+			    )
+		summarizeBy: none
+		sortByColumn: 'Sales to Flown Sort'
+
+	column 'Sales to Flown Sort' =
+			VAR d = SalesToFlown[sales_to_flown]
+			RETURN
+			    SWITCH ( TRUE (), d <= 7, d + 1, d <= 30, 9, d <= 60, 10, d <= 120, 11, 12 )
+		summarizeBy: none
+
+	partition SalesToFlown = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "\fact_sales_to_flown.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Nulls = Table.ReplaceValue(Promoted, "", null, Replacer.ReplaceValue, Table.ColumnNames(Promoted)),
+				    Typed = Table.TransformColumnTypes(Nulls, {{"route_vv", type text}, {"servicetypecode", type text}, {"sales_to_flown", Int64.Type}, {"trip_duration", Int64.Type}, {"trip_type", type text}, {"year", Int64.Type}, {"pax", Int64.Type}}, "en-US")
+				in
+				    Typed
