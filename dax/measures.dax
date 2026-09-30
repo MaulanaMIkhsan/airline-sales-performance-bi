@@ -1,0 +1,291 @@
+// All measures as a DAX query. Paste into Power BI Desktop > DAX query view and run.
+DEFINE
+	MEASURE _Measures[_MaxDateInData] =
+		CALCULATE ( MAX ( SalesFlown[DATES] ), ALL ( SalesFlown ) )
+	MEASURE _Measures[_MaxDateInContext] =
+		MAX ( SalesFlown[DATES] )
+	MEASURE _Measures[_TargetDate] =
+		[_MaxDateInContext]
+	MEASURE _Measures[_MaxWeek] =
+		MAX ( SalesFlown[WEEK NUM] )
+	MEASURE _Measures[_MaxTravelDateInData] =
+		CALCULATE ( MAX ( SalesFlown[DATE TRAVEL] ), ALL ( SalesFlown ) )
+	MEASURE _Measures[Data As Of] =
+		VAR MaxDateInContext = [_MaxDateInContext]
+		VAR MaxDateInData = [_MaxDateInData]
+		VAR AllMonthsSelected =
+		    COUNTROWS ( VALUES ( DateTable[MonthNumber] ) ) = COUNTROWS ( ALL ( DateTable[MonthNumber] ) )
+		RETURN
+		    IF ( AllMonthsSelected, MaxDateInData, MaxDateInContext )
+	MEASURE _Measures[Revenue] =
+		SUM ( SalesFlown[NETT USD] )
+	MEASURE _Measures[Pax] =
+		SUM ( SalesFlown[PAX] )
+	MEASURE _Measures[Avg Fare] =
+		DIVIDE ( [Revenue], [Pax] )
+	MEASURE _Measures[Revenue TY] =
+		VAR CutoffDate = [_MaxDateInData]
+		RETURN
+		    CALCULATE ( [Revenue], KEEPFILTERS ( DateTable[Date] <= CutoffDate ) )
+	MEASURE _Measures[Revenue LY] =
+		VAR CutoffDateLY = EDATE ( [_MaxDateInData], -12 )
+		RETURN
+		    CALCULATE (
+		        [Revenue],
+		        SAMEPERIODLASTYEAR ( DateTable[Date] ),
+		        KEEPFILTERS ( DateTable[Date] <= CutoffDateLY )
+		    )
+	MEASURE _Measures[Revenue YoY] =
+		[Revenue TY] - [Revenue LY]
+	MEASURE _Measures[Revenue YoY %] =
+		DIVIDE ( [Revenue TY] - [Revenue LY], [Revenue LY] )
+	MEASURE _Measures[Pax TY] =
+		VAR CutoffDate = [_MaxDateInData]
+		RETURN
+		    CALCULATE ( [Pax], KEEPFILTERS ( DateTable[Date] <= CutoffDate ) )
+	MEASURE _Measures[Pax LY] =
+		VAR CutoffDateLY = EDATE ( [_MaxDateInData], -12 )
+		RETURN
+		    CALCULATE (
+		        [Pax],
+		        SAMEPERIODLASTYEAR ( DateTable[Date] ),
+		        KEEPFILTERS ( DateTable[Date] <= CutoffDateLY )
+		    )
+	MEASURE _Measures[Pax YoY] =
+		[Pax TY] - [Pax LY]
+	MEASURE _Measures[Pax YoY %] =
+		DIVIDE ( [Pax TY] - [Pax LY], [Pax LY] )
+	MEASURE _Measures[Avg Fare TY] =
+		DIVIDE ( [Revenue TY], [Pax TY] )
+	MEASURE _Measures[Avg Fare LY] =
+		DIVIDE ( [Revenue LY], [Pax LY] )
+	MEASURE _Measures[Avg Fare YoY] =
+		[Avg Fare TY] - [Avg Fare LY]
+	MEASURE _Measures[Avg Fare YoY %] =
+		DIVIDE ( [Avg Fare TY] - [Avg Fare LY], [Avg Fare LY] )
+	MEASURE _Measures[Revenue Same Date LY] =
+		VAR CurrentDate = MAX ( DateTable[Date] )
+		RETURN
+		    IF (
+		        CurrentDate <= [_MaxDateInData],
+		        CALCULATE ( [Revenue], ALL ( DateTable ), DateTable[Date] = EDATE ( CurrentDate, -12 ) )
+		    )
+	MEASURE _Measures[Revenue MTD] =
+		VAR TargetDate = [_TargetDate]
+		RETURN
+		    CALCULATE ( TOTALMTD ( [Revenue], DateTable[Date] ), DateTable[Date] <= TargetDate )
+	MEASURE _Measures[Revenue MTD LY] =
+		VAR TargetDateLY = EDATE ( [_TargetDate], -12 )
+		RETURN
+		    CALCULATE (
+		        [Revenue],
+		        ALL ( DateTable ),
+		        DATESBETWEEN ( DateTable[Date], DATE ( YEAR ( TargetDateLY ), MONTH ( TargetDateLY ), 1 ), TargetDateLY )
+		    )
+	MEASURE _Measures[Revenue MTD YoY %] =
+		DIVIDE ( [Revenue MTD] - [Revenue MTD LY], [Revenue MTD LY] )
+	MEASURE _Measures[Revenue YTD] =
+		VAR TargetDate = [_TargetDate]
+		RETURN
+		    CALCULATE ( TOTALYTD ( [Revenue], DateTable[Date] ), DateTable[Date] <= TargetDate )
+	MEASURE _Measures[Revenue YTD LY] =
+		VAR TargetDateLY = EDATE ( [_TargetDate], -12 )
+		RETURN
+		    CALCULATE (
+		        [Revenue],
+		        ALL ( DateTable ),
+		        DATESBETWEEN ( DateTable[Date], DATE ( YEAR ( TargetDateLY ), 1, 1 ), TargetDateLY )
+		    )
+	MEASURE _Measures[Revenue YTD YoY %] =
+		DIVIDE ( [Revenue YTD] - [Revenue YTD LY], [Revenue YTD LY] )
+	MEASURE _Measures[Pax MTD] =
+		VAR TargetDate = [_TargetDate]
+		RETURN
+		    CALCULATE ( TOTALMTD ( [Pax], DateTable[Date] ), DateTable[Date] <= TargetDate )
+	MEASURE _Measures[Pax MTD LY] =
+		VAR TargetDateLY = EDATE ( [_TargetDate], -12 )
+		RETURN
+		    CALCULATE (
+		        [Pax],
+		        ALL ( DateTable ),
+		        DATESBETWEEN ( DateTable[Date], DATE ( YEAR ( TargetDateLY ), MONTH ( TargetDateLY ), 1 ), TargetDateLY )
+		    )
+	MEASURE _Measures[Pax MTD YoY %] =
+		DIVIDE ( [Pax MTD] - [Pax MTD LY], [Pax MTD LY] )
+	MEASURE _Measures[Pax YTD] =
+		VAR TargetDate = [_TargetDate]
+		RETURN
+		    CALCULATE ( TOTALYTD ( [Pax], DateTable[Date] ), DateTable[Date] <= TargetDate )
+	MEASURE _Measures[Pax YTD LY] =
+		VAR TargetDateLY = EDATE ( [_TargetDate], -12 )
+		RETURN
+		    CALCULATE (
+		        [Pax],
+		        ALL ( DateTable ),
+		        DATESBETWEEN ( DateTable[Date], DATE ( YEAR ( TargetDateLY ), 1, 1 ), TargetDateLY )
+		    )
+	MEASURE _Measures[Pax YTD YoY %] =
+		DIVIDE ( [Pax YTD] - [Pax YTD LY], [Pax YTD LY] )
+	MEASURE _Measures[Avg Fare MTD] =
+		DIVIDE ( [Revenue MTD], [Pax MTD] )
+	MEASURE _Measures[Avg Fare MTD LY] =
+		DIVIDE ( [Revenue MTD LY], [Pax MTD LY] )
+	MEASURE _Measures[Avg Fare MTD YoY %] =
+		DIVIDE ( [Avg Fare MTD] - [Avg Fare MTD LY], [Avg Fare MTD LY] )
+	MEASURE _Measures[Avg Fare YTD] =
+		DIVIDE ( [Revenue YTD], [Pax YTD] )
+	MEASURE _Measures[Avg Fare YTD LY] =
+		DIVIDE ( [Revenue YTD LY], [Pax YTD LY] )
+	MEASURE _Measures[Avg Fare YTD YoY %] =
+		DIVIDE ( [Avg Fare YTD] - [Avg Fare YTD LY], [Avg Fare YTD LY] )
+	MEASURE _Measures[Revenue Selected Period] =
+		SWITCH (
+		    SELECTEDVALUE ( PeriodSelector[Period], "MTD" ),
+		    "MTD", [Revenue MTD],
+		    "YTD", [Revenue YTD]
+		)
+	MEASURE _Measures[Revenue Selected Period LY] =
+		SWITCH (
+		    SELECTEDVALUE ( PeriodSelector[Period], "MTD" ),
+		    "MTD", [Revenue MTD LY],
+		    "YTD", [Revenue YTD LY]
+		)
+	MEASURE _Measures[Revenue Selected Period YoY] =
+		[Revenue Selected Period] - [Revenue Selected Period LY]
+	MEASURE _Measures[Revenue Selected Period YoY %] =
+		DIVIDE ( [Revenue Selected Period] - [Revenue Selected Period LY], [Revenue Selected Period LY] )
+	MEASURE _Measures[Revenue P1] =
+		CALCULATE (
+		    SUM ( SalesFlown[NETT USD] ),
+		    KEEPFILTERS ( TREATAS ( VALUES ( Calendar_Slicer1[Date] ), DateTable[Date] ) )
+		)
+	MEASURE _Measures[Pax P1] =
+		CALCULATE (
+		    SUM ( SalesFlown[PAX] ),
+		    KEEPFILTERS ( TREATAS ( VALUES ( Calendar_Slicer1[Date] ), DateTable[Date] ) )
+		)
+	MEASURE _Measures[Revenue P2] =
+		CALCULATE (
+		    SUM ( SalesFlown[NETT USD] ),
+		    KEEPFILTERS ( TREATAS ( VALUES ( Calendar_Slicer2[Date] ), DateTable[Date] ) )
+		)
+	MEASURE _Measures[Pax P2] =
+		CALCULATE (
+		    SUM ( SalesFlown[PAX] ),
+		    KEEPFILTERS ( TREATAS ( VALUES ( Calendar_Slicer2[Date] ), DateTable[Date] ) )
+		)
+	MEASURE _Measures[Avg Fare P1] =
+		DIVIDE ( [Revenue P1], [Pax P1] )
+	MEASURE _Measures[Avg Fare P2] =
+		DIVIDE ( [Revenue P2], [Pax P2] )
+	MEASURE _Measures[Revenue P2 vs P1] =
+		[Revenue P2] - [Revenue P1]
+	MEASURE _Measures[Revenue P2 vs P1 %] =
+		DIVIDE ( [Revenue P2] - [Revenue P1], [Revenue P1] )
+	MEASURE _Measures[Pax P2 vs P1] =
+		[Pax P2] - [Pax P1]
+	MEASURE _Measures[Pax P2 vs P1 %] =
+		DIVIDE ( [Pax P2] - [Pax P1], [Pax P1] )
+	MEASURE _Measures[Avg Fare P2 vs P1 %] =
+		DIVIDE ( [Avg Fare P2] - [Avg Fare P1], [Avg Fare P1] )
+	MEASURE _Measures[Revenue PO P1] =
+		CALCULATE (
+		    SUM ( SalesFlown[NETT USD] ),
+		    KEEPFILTERS ( TREATAS ( VALUES ( Calendar_Slicer_PO1[Date] ), DateTable[Date] ) )
+		)
+	MEASURE _Measures[Pax PO P1] =
+		CALCULATE (
+		    SUM ( SalesFlown[PAX] ),
+		    KEEPFILTERS ( TREATAS ( VALUES ( Calendar_Slicer_PO1[Date] ), DateTable[Date] ) )
+		)
+	MEASURE _Measures[Revenue PO P2] =
+		CALCULATE (
+		    SUM ( SalesFlown[NETT USD] ),
+		    KEEPFILTERS ( TREATAS ( VALUES ( Calendar_Slicer_PO2[Date] ), DateTable[Date] ) )
+		)
+	MEASURE _Measures[Pax PO P2] =
+		CALCULATE (
+		    SUM ( SalesFlown[PAX] ),
+		    KEEPFILTERS ( TREATAS ( VALUES ( Calendar_Slicer_PO2[Date] ), DateTable[Date] ) )
+		)
+	MEASURE _Measures[Revenue PO P2 vs P1 %] =
+		DIVIDE ( [Revenue PO P2] - [Revenue PO P1], [Revenue PO P1] )
+	MEASURE _Measures[Pax PO P2 vs P1 %] =
+		DIVIDE ( [Pax PO P2] - [Pax PO P1], [Pax PO P1] )
+	MEASURE _Measures[Pull Out Revenue Recaptured %] =
+		VAR LostOnPulledRoutes =
+		    CALCULATE ( [Revenue PO P1] - [Revenue PO P2], DimRoute[status] = "Pull Out" )
+		VAR GainOnActiveRoutes =
+		    CALCULATE ( [Revenue PO P2] - [Revenue PO P1], DimRoute[status] = "Active" )
+		RETURN
+		    DIVIDE ( GainOnActiveRoutes, LostOnPulledRoutes )
+	MEASURE _Measures[Domestic %] =
+		DIVIDE (
+		    CALCULATE ( [Revenue TY], SalesFlown[SERVICE TYPE] = "DOM" ),
+		    CALCULATE ( [Revenue TY], REMOVEFILTERS ( SalesFlown[SERVICE TYPE] ) )
+		)
+	MEASURE _Measures[International %] =
+		DIVIDE (
+		    CALCULATE ( [Revenue TY], SalesFlown[SERVICE TYPE] = "INT" ),
+		    CALCULATE ( [Revenue TY], REMOVEFILTERS ( SalesFlown[SERVICE TYPE] ) )
+		)
+	MEASURE _Measures[Corporate Share %] =
+		DIVIDE (
+		    CALCULATE ( [Revenue TY], SalesFlown[CORP SHARE] = "Corp" ),
+		    CALCULATE ( [Revenue TY], REMOVEFILTERS ( SalesFlown[CORP SHARE] ) )
+		)
+	MEASURE _Measures[Fare Family Share %] =
+		DIVIDE ( [Revenue TY], CALCULATE ( [Revenue TY], REMOVEFILTERS ( SubclassSortOrder ) ) )
+	MEASURE _Measures[FPA JCDI %] =
+		CALCULATE ( [Fare Family Share %], SubclassSortOrder[FareFamily] = "FPA JCDI" )
+	MEASURE _Measures[ROX %] =
+		CALCULATE ( [Fare Family Share %], SubclassSortOrder[FareFamily] = "ROX" )
+	MEASURE _Measures[Y %] =
+		CALCULATE ( [Fare Family Share %], SubclassSortOrder[FareFamily] = "Y" )
+	MEASURE _Measures[WBMKN %] =
+		CALCULATE ( [Fare Family Share %], SubclassSortOrder[FareFamily] = "WBMKN" )
+	MEASURE _Measures[QTV %] =
+		CALCULATE ( [Fare Family Share %], SubclassSortOrder[FareFamily] = "QTV" )
+	MEASURE _Measures[SHL %] =
+		CALCULATE ( [Fare Family Share %], SubclassSortOrder[FareFamily] = "SHL" )
+	MEASURE _Measures[Pax by Travel Date TY] =
+		VAR CutoffDate = [_MaxTravelDateInData]
+		RETURN
+		    CALCULATE ( [Pax], KEEPFILTERS ( DateFlown[Date] <= CutoffDate ) )
+	MEASURE _Measures[Pax by Travel Date LY] =
+		VAR CutoffDateLY = EDATE ( [_MaxTravelDateInData], -12 )
+		RETURN
+		    CALCULATE (
+		        [Pax],
+		        SAMEPERIODLASTYEAR ( DateFlown[Date] ),
+		        KEEPFILTERS ( DateFlown[Date] <= CutoffDateLY )
+		    )
+	MEASURE _Measures[Pax by Travel Date YoY %] =
+		DIVIDE ( [Pax by Travel Date TY] - [Pax by Travel Date LY], [Pax by Travel Date LY] )
+	MEASURE _Measures[% of Total Pax (Lead Time)] =
+		DIVIDE ( SUM ( SalesToFlown[pax] ), CALCULATE ( SUM ( SalesToFlown[pax] ), ALLSELECTED () ) )
+	MEASURE _Measures[Avg Lead Time (days)] =
+		DIVIDE (
+		    SUMX ( SalesToFlown, SalesToFlown[sales_to_flown] * SalesToFlown[pax] ),
+		    SUM ( SalesToFlown[pax] )
+		)
+	MEASURE _Measures[BLF %] =
+		DIVIDE ( SUM ( BookingPosition[Book_Total] ), SUM ( BookingPosition[Capacity_Total] ) )
+	MEASURE _Measures[Seats Unsold] =
+		SUM ( BookingPosition[Capacity_Total] ) - SUM ( BookingPosition[Book_Total] )
+	MEASURE _Measures[Group Pax Confirmed] =
+		CALCULATE ( SUM ( GroupBooking[TTL PAX] ), GroupBooking[STATUS] IN { "TICKETED", "DEPOSIT" } )
+	MEASURE _Measures[Group Sales IDR] =
+		CALCULATE ( SUM ( GroupBooking[Total sales ( nett x ttl pax )] ), GroupBooking[STATUS] IN { "TICKETED", "DEPOSIT" } )
+	MEASURE _Measures[Group Cancel Rate %] =
+		DIVIDE ( CALCULATE ( COUNTROWS ( GroupBooking ), GroupBooking[STATUS] = "CANCELLED" ), COUNTROWS ( GroupBooking ) )
+EVALUATE
+	SUMMARIZECOLUMNS (
+		DateTable[Year],
+		ValTypeTable[SalesType],
+		"Revenue TY", [Revenue TY],
+		"Revenue LY", [Revenue LY],
+		"Revenue YoY %", [Revenue YoY %],
+		"Pax TY", [Pax TY],
+		"Avg Fare TY", [Avg Fare TY]
+	)
